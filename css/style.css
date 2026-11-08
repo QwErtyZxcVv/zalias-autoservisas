@@ -8,7 +8,7 @@
 .hero-bg-image {
   position: absolute;
   inset: 0;
-  background: url('../../img/Garage.jpg') center/cover no-repeat;
+  background: url('../img/Garage.jpg') center/cover no-repeat;
   filter: brightness(0.35) contrast(1.1);
   transform: scale(1.05);
 }
