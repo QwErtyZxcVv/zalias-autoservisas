@@ -89,7 +89,7 @@ let currentLang = "lt";
 
 function vilniusNow() {
   const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Vilnius", weekday: "short", hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(new Date());
-  const get = t => parts.find(p => p.type === t).value;
+  const get = t => parts.find(p => p.type === t)?.value ?? "0";
   const day = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(get("weekday"));
   return { day, mins: (+get("hour") % 24) * 60 + (+get("minute")) };
 }
@@ -98,10 +98,14 @@ function renderStatus() {
   const t = dict[currentLang], { day, mins } = vilniusNow();
   const weekday = day >= 1 && day <= 5;
   const isOpen = weekday && mins >= 540 && mins < 1080;
-  const el = document.getElementById("status");
-  
-  el.className = "inline-flex items-center gap-3 px-4 py-2 rounded-full glass-card border text-xs font-bold " + (isOpen ? "open border-neon-green/40 text-neon-glow" : "closed border-red-500/40 text-red-400");
-  
+  const statusEl = document.getElementById("status");
+  const statusTextEl = document.getElementById("status-text");
+  const hoursEl = document.getElementById("hours");
+
+  if (statusEl) {
+    statusEl.className = "inline-flex items-center gap-3 px-4 py-2 rounded-full glass-card border text-xs font-bold " + (isOpen ? "open border-neon-green/40 text-neon-glow" : "closed border-red-500/40 text-red-400");
+  }
+
   let text = t.open;
   if (!isOpen) {
     let when;
@@ -110,12 +114,17 @@ function renderStatus() {
     else when = t.monday;
     text = t.closed + " · " + t.opensAt.replace("{d}", when);
   }
-  document.getElementById("status-text").textContent = text;
+
+  if (statusTextEl) {
+    statusTextEl.textContent = text;
+  }
 
   const todayRow = weekday ? 0 : 1;
-  document.getElementById("hours").innerHTML =
-    `<tr class="${todayRow === 0 ? 'today' : ''}"><td>${t.days[0]}</td><td>09:00–18:00</td></tr>` +
-    `<tr class="${todayRow === 1 ? 'today' : ''}"><td>${t.days[1]}</td><td>${t.off}</td></tr>`;
+  if (hoursEl) {
+    hoursEl.innerHTML =
+      `<tr class="${todayRow === 0 ? 'today' : ''}"><td>${t.days[0]}</td><td>09:00–18:00</td></tr>` +
+      `<tr class="${todayRow === 1 ? 'today' : ''}"><td>${t.days[1]}</td><td>${t.off}</td></tr>`;
+  }
 }
 
 function setLang(lang) {
@@ -124,7 +133,7 @@ function setLang(lang) {
   const t = dict[lang];
   document.documentElement.lang = lang;
   document.querySelectorAll("[data-i18n]").forEach(el => { const k = el.dataset.i18n; if (t[k]) el.textContent = t[k]; });
-  document.querySelectorAll("[data-i18n-html]").forEach(el => { el.innerHTML = t[el.dataset.i18nHtml]; });
+  document.querySelectorAll("[data-i18n-html]").forEach(el => { const key = el.dataset.i18nHtml; if (t[key]) el.innerHTML = t[key]; });
   document.querySelectorAll(".lang-picker button").forEach(b => b.classList.toggle("active", b.dataset.lang === lang));
   renderStatus();
 }
@@ -134,10 +143,12 @@ setLang("lt");
 setInterval(renderStatus, 60000);
 
 const header = document.getElementById("header");
-window.addEventListener("scroll", () => {
-  if (window.scrollY > 20) {
-    header.classList.add("scrolled");
-  } else {
-    header.classList.remove("scrolled");
-  }
-}, { passive: true });
+if (header) {
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 20) {
+      header.classList.add("scrolled");
+    } else {
+      header.classList.remove("scrolled");
+    }
+  }, { passive: true });
+}

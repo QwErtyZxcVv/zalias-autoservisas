@@ -53,9 +53,12 @@ header.scrolled {
 #hours tr.today {
   color: #34D399;
 }
+
 #hours td {
   padding: 4px 0;
 }
+
 #hours td:last-child {
   text-align: right;
 }
+
